@@ -1,0 +1,3 @@
+{
+  "plugins": ["macros", ["babel-plugin-styled-components", { "ssr": true }]]
+}
