@@ -1,0 +1,5 @@
+{
+  "ignore": "build",
+  "ext": "ts,tsx,js,jsx,mjs,json",
+  "exec": "yarn build && yarn ssr"
+}
