@@ -3,6 +3,7 @@ import Logo from "../components/Logo";
 import { graphql } from "babel-plugin-relay/macro";
 import { GraphQLTaggedNode, QueryRenderer } from "react-relay";
 import { HomeQuery } from "../__generated__/HomeQuery.graphql";
+import { TRelayComponent } from "../types";
 
 export const Query = graphql`
   query HomeQuery {
@@ -16,12 +17,8 @@ export const Query = graphql`
   }
 `;
 
-interface TRelayComponent<T> extends React.FC<T> {
-  mainQuery: GraphQLTaggedNode;
-}
-
 interface Props {
-  relayEnvironment: any;
+  relayEnvironment?: any;
 }
 
 const Home: TRelayComponent<Props> = ({ relayEnvironment }) => (

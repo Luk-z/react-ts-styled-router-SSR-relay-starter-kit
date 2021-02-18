@@ -697,6 +697,18 @@ Open [localhost:8000/](http://localhost:8000/)!
 yarn add react-relay-network-modern react-relay-network-modern-ssr serialize-javascript isomorphic-fetch
 ```
 
+Add support for routes. `react-router-config` give some helper functions to handle SSR routing (outside react render)
+
+```bash
+yarn add react-router-config
+```
+
+## Add typescript for node-express
+
+```bash
+yarn add -D @types/node @types/express @types/serialize-javascript @types/react-router-config
+```
+
 # Fork
 
 You cannot always make a branch or pull an existing branch and push back to it,

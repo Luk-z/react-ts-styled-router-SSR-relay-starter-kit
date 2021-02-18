@@ -10,9 +10,11 @@ import { renderToString } from "react-dom/server";
 import {
   RelayNetworkLayer,
   urlMiddleware,
-  loggerMiddleware,
+  //loggerMiddleware,
 } from "react-relay-network-modern/node8";
-import RelayServerSSR from "react-relay-network-modern-ssr/node8/server";
+import RelayServerSSR, {
+  SSRCache,
+} from "react-relay-network-modern-ssr/node8/server";
 import { StaticRouter } from "react-router-dom";
 import {
   Environment,
@@ -24,9 +26,9 @@ import {
 import { ServerStyleSheet, StyleSheetManager } from "styled-components";
 import App from "../App";
 import GlobalStyle from "../globalStyle";
-import { Query } from "../pages/Home";
 import { matchRoutes } from "react-router-config";
 import routes from "../routes/routes";
+import { TRoutes } from "../types";
 
 const PORT = process.env.PORT;
 
@@ -42,7 +44,7 @@ app.use(
 app.get("/*", (req, res, next) => {
   console.log(req.path);
   const { path: location } = req;
-  const context = {};
+  const context = { statusCode: undefined };
   fs.readFile(
     path.resolve("./build/index.html"),
     "utf-8",
@@ -53,17 +55,21 @@ app.get("/*", (req, res, next) => {
       }
 
       let newEnv = null;
-      let relayData = null;
+      let relayData: SSRCache = [];
 
       //take route component
-      const branch = matchRoutes(routes, location);
-      if (branch.length > 0 && branch[0].route.component.mainQuery) {
+      const branch = matchRoutes<any, TRoutes>(routes, location);
+      if (
+        branch.length > 0 &&
+        branch[0] &&
+        branch[0].route?.component?.mainQuery
+      ) {
         const query = branch[0].route.component.mainQuery;
 
         const relayServerSSR = new RelayServerSSR();
         const network = new RelayNetworkLayer([
           urlMiddleware({
-            url: process.env.REACT_APP_GRAPHQL_ENDPOINT,
+            url: process.env.REACT_APP_GRAPHQL_ENDPOINT as string,
             headers: {
               "Content-Type": "application/json",
             },
@@ -75,20 +81,20 @@ app.get("/*", (req, res, next) => {
         const store = new Store(source);
         const relayEnvironment = new Environment({ network, store });
 
-        await fetchQuery(relayEnvironment, query /*, null, { force: true }*/);
+        await fetchQuery(relayEnvironment, query, {} /*, { force: true }*/);
         relayData = await relayServerSSR.getCache();
 
         newEnv = new Environment({
           network: Network.create(function () {
             //console.log("relayData");
-            return relayData[0][1];
+            return relayData[0][1] as any;
           }),
           store: store,
         });
       } else {
         //static page or 404
         newEnv = new Environment({
-          network: Network.create(() => null),
+          network: Network.create(() => relayData as any),
           store: new Store(new RecordSource()),
         });
       }
