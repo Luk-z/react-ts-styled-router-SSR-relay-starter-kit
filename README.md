@@ -705,6 +705,8 @@ yarn add react-router-config
 
 ## Add typescript for node-express
 
+`src/server/index.js` must remain a js file because it is the entry point that load all the transpilers & c. `src/server/server.js` can be converted in `.ts`
+
 ```bash
 yarn add -D @types/node @types/express @types/serialize-javascript @types/react-router-config
 ```
