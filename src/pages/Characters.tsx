@@ -2,15 +2,14 @@ import { Helmet } from "react-helmet";
 import Logo from "../components/Logo";
 import { graphql } from "babel-plugin-relay/macro";
 import { GraphQLTaggedNode, QueryRenderer } from "react-relay";
-import { HomeQuery } from "../__generated__/HomeQuery.graphql";
+import { CharactersQuery } from "../__generated__/CharactersQuery.graphql";
 
 export const Query = graphql`
-  query HomeQuery {
-    episodes {
+  query CharactersQuery {
+    characters {
       results {
         id
         name
-        episode
       }
     }
   }
@@ -24,8 +23,8 @@ interface Props {
   relayEnvironment: any;
 }
 
-const Home: TRelayComponent<Props> = ({ relayEnvironment }) => (
-  <QueryRenderer<HomeQuery>
+const Characters: TRelayComponent<Props> = ({ relayEnvironment }) => (
+  <QueryRenderer<CharactersQuery>
     environment={relayEnvironment}
     query={Query}
     render={({ error, props, retry }) => {
@@ -37,19 +36,21 @@ const Home: TRelayComponent<Props> = ({ relayEnvironment }) => (
         return <div>Loading...</div>;
       }
 
-      const episodes = props?.episodes?.results;
+      const characters = props?.characters?.results;
 
       return (
         <div>
           <Helmet>
-            <title>Home - React Demo</title>
+            <title>Characters</title>
           </Helmet>
-          {(!episodes || !episodes.length) && <div>No episodes found!</div>}
-          {episodes && episodes.length && (
+          {(!characters || !characters.length) && (
+            <div>No character found!</div>
+          )}
+          {characters && characters.length && (
             <div>
-              <div>NUM episodes: {props?.episodes?.results?.length}</div>
+              <div>NUM characters: {props?.characters?.results?.length}</div>
               <hr />
-              {episodes.map((item, index) => (
+              {characters.map((item, index) => (
                 <div key={index}>{item?.name}</div>
               ))}
             </div>
@@ -62,6 +63,6 @@ const Home: TRelayComponent<Props> = ({ relayEnvironment }) => (
   />
 );
 
-Home.mainQuery = Query;
+Characters.mainQuery = Query;
 
-export default Home;
+export default Characters;

@@ -7,8 +7,12 @@ import path from "path";
 import serialize from "serialize-javascript";
 import React from "react";
 import { renderToString } from "react-dom/server";
-import { RelayNetworkLayer, urlMiddleware } from "react-relay-network-modern";
-import RelayServerSSR from "react-relay-network-modern-ssr/lib/server";
+import {
+  RelayNetworkLayer,
+  urlMiddleware,
+  loggerMiddleware,
+} from "react-relay-network-modern/node8";
+import RelayServerSSR from "react-relay-network-modern-ssr/node8/server";
 import { StaticRouter } from "react-router-dom";
 import {
   Environment,
@@ -21,6 +25,8 @@ import { ServerStyleSheet, StyleSheetManager } from "styled-components";
 import App from "../App";
 import GlobalStyle from "../globalStyle";
 import { Query } from "../pages/Home";
+import { matchRoutes } from "react-router-config";
+import routes from "../routes/routes";
 
 const PORT = process.env.PORT;
 
@@ -46,30 +52,46 @@ app.get("/*", (req, res, next) => {
         return res.status(500).send("Some error happens");
       }
 
-      const relayServerSSR = new RelayServerSSR();
-      const network = new RelayNetworkLayer([
-        urlMiddleware({
-          url: process.env.REACT_APP_GRAPHQL_ENDPOINT,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }),
-        relayServerSSR.getMiddleware(),
-      ]);
-      const source = new RecordSource();
-      const store = new Store(source);
-      const relayEnvironment = new Environment({ network, store });
+      let newEnv = null;
+      let relayData = null;
 
-      await fetchQuery(relayEnvironment, Query);
-      const relayData = await relayServerSSR.getCache();
+      //take route component
+      const branch = matchRoutes(routes, location);
+      if (branch.length > 0 && branch[0].route.component.mainQuery) {
+        const query = branch[0].route.component.mainQuery;
 
-      const newEnv = new Environment({
-        network: Network.create(function () {
-          console.log("relayData");
-          return relayData[0][1];
-        }),
-        store: new Store(new RecordSource()),
-      });
+        const relayServerSSR = new RelayServerSSR();
+        const network = new RelayNetworkLayer([
+          urlMiddleware({
+            url: process.env.REACT_APP_GRAPHQL_ENDPOINT,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }),
+          //loggerMiddleware(),
+          relayServerSSR.getMiddleware(),
+        ]);
+        const source = new RecordSource();
+        const store = new Store(source);
+        const relayEnvironment = new Environment({ network, store });
+
+        await fetchQuery(relayEnvironment, query /*, null, { force: true }*/);
+        relayData = await relayServerSSR.getCache();
+
+        newEnv = new Environment({
+          network: Network.create(function () {
+            //console.log("relayData");
+            return relayData[0][1];
+          }),
+          store: store,
+        });
+      } else {
+        //static page or 404
+        newEnv = new Environment({
+          network: Network.create(() => null),
+          store: new Store(new RecordSource()),
+        });
+      }
 
       const sheet = new ServerStyleSheet();
       let html = "";

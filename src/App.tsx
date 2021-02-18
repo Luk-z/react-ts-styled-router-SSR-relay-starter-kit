@@ -2,6 +2,7 @@ import React from "react";
 import { Helmet } from "react-helmet";
 import { Link, Switch, Route } from "react-router-dom";
 import About from "./pages/About";
+import Characters from "./pages/Characters";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +43,9 @@ const App: React.FC<Props> = ({ relayEnvironment }) => {
               <Link to="/">Home</Link>
             </li>
             <li>
+              <Link to="/characters">Characters</Link>
+            </li>
+            <li>
               <Link to="/about">About</Link>
             </li>
             <li>
@@ -53,6 +57,9 @@ const App: React.FC<Props> = ({ relayEnvironment }) => {
         {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
         <Switch>
+          <Route exact path="/characters">
+            <Characters relayEnvironment={relayEnvironment} />
+          </Route>
           <Route exact path="/about">
             <About />
           </Route>

@@ -1,4 +1,10 @@
 import { Environment /*, Network*/, RecordSource, Store } from "relay-runtime";
+import {
+  RelayNetworkLayer,
+  urlMiddleware,
+} from "react-relay-network-modern/node8";
+import RelayClientSSR from "react-relay-network-modern-ssr/node8/client";
+import { SSRCache } from "react-relay-network-modern-ssr/node8/server";
 /*
 function fetchQuery(operation: any, variables: any) {
   return fetch(process.env.REACT_APP_GRAPHQL_ENDPOINT as string, {
@@ -23,10 +29,6 @@ const environment = new Environment({
 export default environment;
 */
 
-import { RelayNetworkLayer } from "react-relay-network-modern";
-import RelayClientSSR from "react-relay-network-modern-ssr/lib/client";
-import { SSRCache } from "react-relay-network-modern-ssr/lib/server";
-
 interface TWindow extends Window {
   __RELAY_BOOTSTRAP_DATA__?: SSRCache;
 }
@@ -36,8 +38,14 @@ const relayClientSSR = new RelayClientSSR(
 );
 
 const network = new RelayNetworkLayer([
+  urlMiddleware({
+    url: process.env.REACT_APP_GRAPHQL_ENDPOINT as string,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }),
   relayClientSSR.getMiddleware({
-    lookup: true, // Will preserve cache rather than purge after mount.
+    //lookup: true, // Will preserve cache rather than purge after mount.
   }),
 ]);
 
