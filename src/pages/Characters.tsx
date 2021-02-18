@@ -1,16 +1,16 @@
 import { Helmet } from "react-helmet";
 import Logo from "../components/Logo";
 import { graphql } from "babel-plugin-relay/macro";
-import { GraphQLTaggedNode, QueryRenderer } from "react-relay";
+import { QueryRenderer } from "react-relay";
 import { CharactersQuery } from "../__generated__/CharactersQuery.graphql";
 import { TRelayComponent } from "../types";
+import Character from "../components/Character";
 
 export const Query = graphql`
   query CharactersQuery {
     characters {
       results {
-        id
-        name
+        ...Character_character
       }
     }
   }
@@ -47,9 +47,10 @@ const Characters: TRelayComponent<Props> = ({ relayEnvironment }) => (
             <div>
               <div>NUM characters: {props?.characters?.results?.length}</div>
               <hr />
-              {characters.map((item, index) => (
-                <div key={index}>{item?.name}</div>
-              ))}
+              {characters.map(
+                (item, index) =>
+                  item && <Character key={index} character={item} />
+              )}
             </div>
           )}
           <Logo />
