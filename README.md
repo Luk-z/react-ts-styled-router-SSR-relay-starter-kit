@@ -1,4 +1,4 @@
-# Installation 1
+# Installation 2
 
 ```
 yarn install
